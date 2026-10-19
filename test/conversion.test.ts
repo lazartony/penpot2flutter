@@ -2510,3 +2510,16 @@ test("accepts numeric line heights and font metrics from typography-token-bound 
   assert.match(JSON.stringify(result.root), /"fontFamily":"IBM Plex Mono"/);
   assert.equal(result.diagnostics.filter((item) => item.code === "TEXT_LINE_HEIGHT_INVALID").length, 0);
 });
+
+test("checks token set order within each library instead of across merged libraries", () => {
+  const set = (id: string, index: number, sourceLibraryId?: string) => ({
+    id,
+    name: id,
+    index,
+    active: true,
+    tokenIds: [],
+    ...(sourceLibraryId === undefined ? {} : { sourceLibraryId, sourceLibraryScope: "shared" as const }),
+  });
+  const registry = buildTokenRegistry([], [set("core", 0), set("light", 1), set("dark", 2), set("core-shared", 0, "lib"), set("light-shared", 1, "lib")], []);
+  assert.equal(registry.diagnostics.filter((item) => item.code === "TOKEN_SET_ORDER_INVALID").length, 0);
+});
