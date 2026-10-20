@@ -1460,6 +1460,7 @@ function assetCandidates(
     ...(shape.sourceLibraryScope === undefined ? {} : { sourceLibraryScope: shape.sourceLibraryScope }),
     ...(shape.sourceLibraryId == null || shape.sourceLibraryId === "" ? {} : { sourceLibraryModule: libraryModules.get(shape.sourceLibraryId) }),
   });
+  const visitRoot = (root: PenpotSourceShape): void => visit({ ...root, isComponentInstance: false });
   const visit = (shape: PenpotSourceShape): void => {
     const sourceNodeId = sourceIdOf(shape.id);
     const image = shape.fills === "mixed" || shape.fills == null ? undefined : shape.fills.find((fill) => fill.fillImage != null)?.fillImage;
@@ -1486,10 +1487,15 @@ function assetCandidates(
         dimensions: { width: nonNegativeDimension(shape.width), height: nonNegativeDimension(shape.height) },
       });
     }
+    // A resolved component instance renders through its component widget, whose
+    // canonical root is visited below; exporting its subtree again would emit one
+    // duplicate asset per instance.
+    if (isComponentRootInstance(shape) && shape.componentId != null && componentIds.has(shape.componentId)) return;
     (shape.children ?? []).forEach(visit);
   };
+  const componentIds = new Set(components.map((component) => component.id));
   selection.forEach(visit);
-  components.forEach((component) => visit(component.root));
+  components.forEach((component) => visitRoot(component.root));
   variants.forEach((variant) => variant.members.forEach((member) => visit(member.root)));
   for (const font of typographyInput.fonts ?? []) {
     for (const variant of font.variants) {
