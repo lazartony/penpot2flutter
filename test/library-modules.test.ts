@@ -185,7 +185,7 @@ test("resolves tokens on local component shapes from the local catalog", () => {
 });
 
 test("exports a component's vector once instead of once per instance", () => {
-  const vector = (id: string) => ({ id, name: "chevron", type: "path", x: 0, y: 0, width: 18, height: 18, visible: true, svgContent: "<svg><path d=\"M0 0L9 9\"/></svg>" });
+  const vector = (id: string) => ({ id, name: "chevron", type: "path", x: 0, y: 0, width: 18, height: 18, visible: true, svgContent: `<svg><path data-id="${id}" d="M0 0L9 9"/></svg>` });
   const iconRoot = { id: "icon-root", name: "Chevron", type: "board", x: 0, y: 0, width: 18, height: 18, visible: true, children: [vector("main-path")] } as unknown as PenpotSourceShape;
   const instance = (id: string) => ({ id, name: "icon / chevron", type: "board", x: 0, y: 0, width: 18, height: 18, visible: true, isComponentInstance: true, componentId: "chevron", children: [vector(`${id}-path`)] }) as unknown as PenpotSourceShape;
   const result = extractSelection(
