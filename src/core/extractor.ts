@@ -634,7 +634,8 @@ function tokenReferencesOf(
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([property, tokenName]): IrTokenReference => {
       const normalizedProperty = canonicalTokenProperty(property);
-      const libraryId = shape.sourceLibraryId == null || shape.sourceLibraryId === "" ? undefined : shape.sourceLibraryId;
+      // Shapes from local components carry the current file's id; their tokens live in the local catalog.
+      const libraryId = shape.sourceLibraryId == null || shape.sourceLibraryId === "" || shape.sourceLibraryScope === "local" ? undefined : shape.sourceLibraryId;
       const token = context.tokenRegistry.get(tokenRegistryKey(libraryId, tokenName)) ?? (libraryId === undefined ? context.tokenRegistry.get(tokenName) : undefined);
       if (token === undefined) {
         diagnostics.push({

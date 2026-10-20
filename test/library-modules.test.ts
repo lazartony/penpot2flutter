@@ -167,3 +167,19 @@ test("keeps library assets and unresolved shared tokens attributable to their li
   assert.ok(files.some((file) => file.path === "lib/generated/penpot/assets.dart"));
   assert.ok(files.some((file) => file.path === "lib/generated/penpot/libraries/assets/assets.dart"));
 });
+
+test("resolves tokens on local component shapes from the local catalog", () => {
+  const localRoot = { ...buttonRoot, tokenBindings: { fill: "color.brand" } } as unknown as PenpotSourceShape;
+  const instance = { ...sharedInstance("local-one", "this-file"), tokenBindings: { fill: "color.brand" } } as PenpotSourceShape;
+  const result = extractSelection(
+    [{ id: "screen", name: "Screen", type: "board", x: 0, y: 0, width: 160, height: 80, visible: true, children: [instance] }],
+    [{ id: "button", libraryId: "this-file", libraryScope: "local", name: "Button", root: localRoot }],
+    [],
+    {
+      libraries: [{ id: "this-file", name: "This file", scope: "local" }],
+      tokens: [{ id: "brand", name: "color.brand", type: "color", value: "#123456", setId: "global" }],
+      sets: [{ id: "global", name: "Global", active: true, tokenIds: ["brand"] }],
+    },
+  );
+  assert.equal(result.diagnostics.filter((item) => item.code === "LIBRARY_TOKEN_UNRESOLVED").length, 0);
+});
